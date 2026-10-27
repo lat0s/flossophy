@@ -1,0 +1,37 @@
+{
+  "name": "@flossophy/api",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch --env-file-if-exists=.env src/main.ts",
+    "build": "esbuild src/main.ts --bundle --platform=node --target=node24 --format=esm --external:argon2 --external:mongodb-client-encryption --external:kerberos --external:snappy --external:@mongodb-js/zstd --external:@aws-sdk/credential-providers --external:gcp-metadata --external:socks --external:aws4 --external:mongodb-memory-server --banner:js=\"import{createRequire}from'node:module';const require=createRequire(import.meta.url);\" --outfile=dist/main.js",
+    "start": "node dist/main.js",
+    "seed": "node --env-file-if-exists=.env scripts/seed.ts",
+    "typecheck": "tsc -p .",
+    "test": "vitest run",
+    "openapi": "node scripts/openapi.ts"
+  },
+  "dependencies": {
+    "@flossophy/shared": "workspace:*",
+    "@koa/bodyparser": "^6.1.0",
+    "@koa/router": "^15.0.0",
+    "argon2": "^0.45.1",
+    "jose": "^6.2.14",
+    "koa": "^3.2.1",
+    "koa-helmet": "^9.0.0",
+    "mongoose": "^9.11.4",
+    "nodemailer": "^10.3.1",
+    "zod": "^4.3.3"
+  },
+  "devDependencies": {
+    "@types/koa": "^3.0.3",
+    "@types/node": "^24.0.0",
+    "@types/nodemailer": "^8.0.2",
+    "@types/supertest": "^6.0.3",
+    "esbuild": "^0.28.2",
+    "mongodb-memory-server": "^11.3.0",
+    "supertest": "^7.3.1",
+    "vitest": "^5.0.5"
+  }
+}
