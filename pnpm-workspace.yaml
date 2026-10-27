@@ -1,0 +1,12 @@
+packages:
+  - apps/*
+  - packages/*
+allowBuilds:
+  argon2: true
+  esbuild: true
+  mongodb-memory-server: true
+  vue-demi: false
+minimumReleaseAgeExclude:
+  - '@tanstack/query-core@5.105.1'
+  - '@tanstack/vue-query@5.105.1'
+  - hono@4.13.16

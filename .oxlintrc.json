@@ -1,0 +1,4 @@
+{
+  "ignorePatterns": ["**/dist/**", "**/coverage/**"],
+  "rules": { "no-unused-vars": "error", "eqeqeq": "error", "no-console": "off" }
+}

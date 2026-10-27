@@ -1,0 +1,25 @@
+{
+  "name": "flossophy",
+  "private": true,
+  "description": "Book a dentist in two taps. Vue 3 + Koa + MongoDB, with a scale-to-zero live demo.",
+  "license": "Apache-2.0",
+  "packageManager": "pnpm@12.11.2",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "pnpm --parallel --filter @flossophy/api --filter @flossophy/web dev",
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "oxlint . && prettier --check .",
+    "format": "prettier --write .",
+    "seed": "pnpm --filter @flossophy/api seed",
+    "e2e": "pnpm --filter @flossophy/web e2e"
+  },
+  "devDependencies": {
+    "oxlint": "^1.90.0",
+    "prettier": "^3.9.10",
+    "typescript": "~6.0.3"
+  }
+}
