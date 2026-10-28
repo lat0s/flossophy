@@ -15,11 +15,12 @@ import { type Sessions, sessions as makeSessions } from './core/session.ts';
 import { authRoutes } from './features/auth/routes.ts';
 import { clinicRoutes } from './features/clinics/routes.ts';
 import { type Mailer, createMailer } from './features/outbox/mailer.ts';
+import { slotRoutes } from './features/slots/routes.ts';
 
 const PREFIX = '/api';
 
 function apiRoutes(cfg: Config, sessions: Sessions, mailer: Mailer) {
-  return [...authRoutes(cfg, sessions, mailer), ...clinicRoutes()];
+  return [...authRoutes(cfg, sessions, mailer), ...clinicRoutes(), ...slotRoutes(mailer)];
 }
 
 /** The OpenAPI document, without a database. The gate serves a copy so docs never wake the API. */
