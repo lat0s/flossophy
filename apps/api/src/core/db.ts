@@ -1,5 +1,7 @@
 import mongoose, { type Connection } from 'mongoose';
 import { userSchema } from '../features/auth/model.ts';
+import { clinicSchema } from '../features/clinics/model.ts';
+import { slotSchema } from '../features/slots/model.ts';
 import { emailSchema } from '../features/outbox/model.ts';
 
 // Unknown filter keys are dropped. Operator injection can't happen because every
@@ -10,6 +12,8 @@ function compile(conn: Connection) {
   return {
     conn,
     User: conn.model('User', userSchema),
+    Clinic: conn.model('Clinic', clinicSchema),
+    Slot: conn.model('Slot', slotSchema),
     Email: conn.model('Email', emailSchema),
   };
 }
@@ -31,5 +35,5 @@ export async function connect(uri: string, dbName: string) {
 }
 
 export async function ensureIndexes(db: Db) {
-  await Promise.all([db.User.syncIndexes(), db.Email.syncIndexes()]);
+  await Promise.all([db.User.syncIndexes(), db.Clinic.syncIndexes(), db.Slot.syncIndexes(), db.Email.syncIndexes()]);
 }
