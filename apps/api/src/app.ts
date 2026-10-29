@@ -15,6 +15,7 @@ import { type Sessions, sessions as makeSessions } from './core/session.ts';
 import { authRoutes } from './features/auth/routes.ts';
 import { clinicRoutes } from './features/clinics/routes.ts';
 import { demoRoutes } from './features/demo/routes.ts';
+import { dentistRoutes } from './features/dentist/routes.ts';
 import { type Mailer, createMailer } from './features/outbox/mailer.ts';
 import { outboxRoutes } from './features/outbox/routes.ts';
 import { slotRoutes } from './features/slots/routes.ts';
@@ -26,6 +27,7 @@ function apiRoutes(cfg: Config, sessions: Sessions, mailer: Mailer) {
     ...authRoutes(cfg, sessions, mailer),
     ...clinicRoutes(),
     ...slotRoutes(mailer),
+    ...dentistRoutes(),
     ...(cfg.DEMO_PERSONAS ? outboxRoutes() : []),
     ...demoRoutes(cfg, sessions),
   ];
