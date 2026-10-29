@@ -14,6 +14,7 @@ export const router = createRouter({
   history: createWebHistory(),
   scrollBehavior: (to, _from, saved) => saved ?? (to.hash ? { el: to.hash } : { top: 0 }),
   routes: [
+    { path: '/', component: () => import('@/features/home/HomePage.vue') },
     {
       path: '/:pathMatch(.*)*',
       component: () => import('@/features/errors/NotFoundPage.vue'),
