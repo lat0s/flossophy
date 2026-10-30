@@ -35,6 +35,16 @@ export const router = createRouter({
       meta: { api: true, title: 'Create account' },
     },
     {
+      path: '/visits',
+      component: () => import('@/features/account/VisitsPage.vue'),
+      meta: { api: true, role: 'patient', title: 'My visits' },
+    },
+    {
+      path: '/outbox',
+      component: () => import('@/features/demo/OutboxPage.vue'),
+      meta: { api: true, title: 'Outbox' },
+    },
+    {
       path: '/:pathMatch(.*)*',
       component: () => import('@/features/errors/NotFoundPage.vue'),
       meta: { title: 'Not found' },
