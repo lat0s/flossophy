@@ -1,5 +1,6 @@
 import type { Role } from '@flossophy/shared';
 import { createRouter, createWebHistory } from 'vue-router';
+import { useDemo } from './demo';
 import { useSession } from './session';
 
 declare module 'vue-router' {
@@ -21,6 +22,12 @@ export const router = createRouter({
       component: () => import('@/features/clinics/ClinicsPage.vue'),
       meta: { api: true, title: 'Find a clinic' },
     },
+    { path: '/login', component: () => import('@/features/auth/LoginPage.vue'), meta: { api: true, title: 'Sign in' } },
+    {
+      path: '/register',
+      component: () => import('@/features/auth/RegisterPage.vue'),
+      meta: { api: true, title: 'Create account' },
+    },
     {
       path: '/:pathMatch(.*)*',
       component: () => import('@/features/errors/NotFoundPage.vue'),
@@ -30,9 +37,10 @@ export const router = createRouter({
 });
 
 router.beforeEach(async (to) => {
+  const demo = useDemo();
   const session = useSession();
   if (!to.meta.api) return true;
-  if (!session.loaded) await session.load();
+  if (!session.loaded) await Promise.all([session.load(), demo.personas ? null : demo.loadMeta()]);
   if (to.meta.role && session.me?.role !== to.meta.role) {
     return session.me
       ? { path: session.me.role === 'dentist' ? '/dentist' : '/visits' }

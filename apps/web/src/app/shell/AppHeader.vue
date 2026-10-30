@@ -3,12 +3,14 @@ import { CalendarHeart, LogOut, Menu, Moon, Stethoscope, Sun, X } from '@lucide/
 import { ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { toast } from 'vue-sonner';
+import { useDemo } from '@/app/demo';
 import { useSession } from '@/app/session';
 import Flossy from '@/shared/mascot/Flossy.vue';
 import { theme, toggleTheme } from '@/shared/theme';
 import UiButton from '@/shared/ui/UiButton.vue';
 
 const session = useSession();
+const demo = useDemo();
 const router = useRouter();
 const route = useRoute();
 const open = ref(false);
@@ -39,6 +41,7 @@ const link =
         <RouterLink to="/clinics" :class="link">Clinics</RouterLink>
         <RouterLink v-if="session.isPatient" to="/visits" :class="link">My visits</RouterLink>
         <RouterLink v-if="session.isDentist" to="/dentist" :class="link">Schedule</RouterLink>
+        <RouterLink v-if="demo.personas" to="/outbox" :class="link">Outbox</RouterLink>
         <a href="/api/docs" :class="link">API</a>
       </nav>
 
@@ -79,6 +82,7 @@ const link =
       <RouterLink to="/clinics" :class="link">Clinics</RouterLink>
       <RouterLink v-if="session.isPatient" to="/visits" :class="link">My visits</RouterLink>
       <RouterLink v-if="session.isDentist" to="/dentist" :class="link">Schedule</RouterLink>
+      <RouterLink v-if="demo.personas" to="/outbox" :class="link">Outbox</RouterLink>
       <a href="/api/docs" :class="link">API docs</a>
       <button v-if="session.me" :class="link" class="text-left" @click="logout">Sign out</button>
       <RouterLink v-else to="/login" :class="link">Sign in</RouterLink>
