@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { nextPath } from '@/features/auth/redirect';
 import { initials, soonest, time } from '@/shared/format';
 
 describe('format', () => {
@@ -15,5 +16,17 @@ describe('format', () => {
 
   it('makes initials without the title', () => {
     expect(initials('Dr. Sara Lind')).toBe('SL');
+  });
+});
+
+describe('nextPath', () => {
+  it('keeps same-app paths', () => {
+    expect(nextPath({ next: '/clinics/floss-boss' }, 'patient')).toBe('/clinics/floss-boss');
+  });
+
+  it('refuses other sites', () => {
+    expect(nextPath({ next: '//evil.example' }, 'patient')).toBe('/clinics');
+    expect(nextPath({ next: 'https://evil.example' }, 'dentist')).toBe('/dentist');
+    expect(nextPath({ next: '/\\evil.example' }, 'patient')).toBe('/clinics');
   });
 });
