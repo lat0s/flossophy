@@ -22,6 +22,12 @@ export const router = createRouter({
       component: () => import('@/features/clinics/ClinicsPage.vue'),
       meta: { api: true, title: 'Find a clinic' },
     },
+    {
+      path: '/clinics/:slug',
+      component: () => import('@/features/clinics/ClinicPage.vue'),
+      meta: { api: true },
+      props: true,
+    },
     { path: '/login', component: () => import('@/features/auth/LoginPage.vue'), meta: { api: true, title: 'Sign in' } },
     {
       path: '/register',
