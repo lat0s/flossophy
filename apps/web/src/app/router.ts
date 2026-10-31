@@ -17,6 +17,7 @@ export const router = createRouter({
   scrollBehavior: (to, _from, saved) => saved ?? (to.hash ? { el: to.hash } : { top: 0 }),
   routes: [
     { path: '/', component: () => import('@/features/home/HomePage.vue') },
+    { path: '/demo', component: () => import('@/features/demo/DemoGatePage.vue'), meta: { title: 'Open the demo' } },
     {
       path: '/clinics',
       component: () => import('@/features/clinics/ClinicsPage.vue'),
@@ -60,7 +61,9 @@ export const router = createRouter({
 router.beforeEach(async (to) => {
   const demo = useDemo();
   const session = useSession();
+  if (!demo.checked) await demo.check();
   if (!to.meta.api) return true;
+  if (demo.hasGate && !demo.open) return { path: '/demo', query: { next: to.fullPath } };
   if (!session.loaded) await Promise.all([session.load(), demo.personas ? null : demo.loadMeta()]);
   if (to.meta.role && session.me?.role !== to.meta.role) {
     return session.me

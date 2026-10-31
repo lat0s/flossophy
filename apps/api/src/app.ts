@@ -3,24 +3,27 @@ import { bodyParser } from '@koa/bodyparser';
 import Koa from 'koa';
 import helmet from 'koa-helmet';
 import type { Connection } from 'mongoose';
-import { DOCS_CSP, docsPage } from '@flossophy/shared/node';
+import { DEMO_COOKIE, DOCS_CSP, docsPage, verifyDemoToken } from '@flossophy/shared/node';
 import type { Config } from './core/config.ts';
-import { modelsFor } from './core/db.ts';
-import { errorMiddleware } from './core/errors.ts';
+import { type Db, modelsFor } from './core/db.ts';
+import { HttpError, errorMiddleware } from './core/errors.ts';
 import { log } from './core/log.ts';
 import { openApiDoc } from './core/openapi.ts';
 import { type AppContext, mount } from './core/route.ts';
 import { RateLimiter, originCheck, rateLimit } from './core/security.ts';
 import { type Sessions, sessions as makeSessions } from './core/session.ts';
-import { authRoutes } from './features/auth/routes.ts';
+import { authRoutes, hashPassword } from './features/auth/routes.ts';
 import { clinicRoutes } from './features/clinics/routes.ts';
 import { demoRoutes } from './features/demo/routes.ts';
+import { type Sandboxes, sandboxes as makeSandboxes } from './features/demo/sandboxes.ts';
 import { dentistRoutes } from './features/dentist/routes.ts';
 import { type Mailer, createMailer } from './features/outbox/mailer.ts';
 import { outboxRoutes } from './features/outbox/routes.ts';
 import { slotRoutes } from './features/slots/routes.ts';
+import { DEMO_PASSWORD } from './seed/data.ts';
 
 const PREFIX = '/api';
+const OPEN_PATHS = new Set([`${PREFIX}/health`, `${PREFIX}/docs`, `${PREFIX}/openapi.json`]);
 
 function apiRoutes(cfg: Config, sessions: Sessions, mailer: Mailer) {
   return [
@@ -43,7 +46,15 @@ export function createApp(cfg: Config, conn: Connection) {
   app.proxy = cfg.TRUST_PROXY;
   const sessions = makeSessions(cfg);
   const mailer = createMailer(cfg);
-  const db = modelsFor(conn);
+  const mainDb = modelsFor(conn);
+  let demoHash: Promise<string> | undefined;
+  const sandboxes: Sandboxes | null = cfg.DEMO_SANDBOXES
+    ? makeSandboxes(conn, {
+        idleMs: cfg.SANDBOX_IDLE_MINUTES * 60_000,
+        max: 40,
+        passwordHash: () => (demoHash ??= hashPassword(DEMO_PASSWORD)),
+      })
+    : null;
 
   const routes = apiRoutes(cfg, sessions, mailer);
   const spec = openApiDoc(routes, PREFIX);
@@ -81,15 +92,23 @@ export function createApp(cfg: Config, conn: Connection) {
   app.use(originCheck(cfg));
   app.use(bodyParser({ jsonLimit: '20kb', enableTypes: ['json'] }));
 
-  // Read the session.
+  // Pick the database for this request and read the session.
   app.use(async (ctx, next) => {
     const c = ctx as unknown as AppContext;
+    let db: Db = mainDb;
+    let sandboxId: string | null = null;
+    if (sandboxes && !OPEN_PATHS.has(ctx.path)) {
+      const demo = verifyDemoToken(cfg.GATE_SECRET, ctx.cookies.get(DEMO_COOKIE));
+      if (!demo) throw new HttpError(401, 'demo_required', 'Open the live demo from the home page first');
+      sandboxId = demo.sandboxId;
+      db = await sandboxes.get(sandboxId);
+    }
     c.state.db = db;
-    c.state.sandboxId = null;
-    c.state.session = await sessions.read(ctx, null);
+    c.state.sandboxId = sandboxId;
+    c.state.session = await sessions.read(ctx, sandboxId);
     await next();
   });
 
   app.use(router.routes()).use(router.allowedMethods({ throw: true }));
-  return { app, spec };
+  return { app, sandboxes, spec };
 }
