@@ -10,11 +10,14 @@ import {
   Stethoscope,
   Zap,
 } from '@lucide/vue';
+import { computed } from 'vue';
+import { useDemo } from '@/app/demo';
 import Flossy from '@/shared/mascot/Flossy.vue';
 import UiButton from '@/shared/ui/UiButton.vue';
 import UiCard from '@/shared/ui/UiCard.vue';
 
-const start = '/clinics';
+const demo = useDemo();
+const start = computed(() => (demo.hasGate && !demo.open ? '/demo' : '/clinics'));
 
 const features = [
   {
