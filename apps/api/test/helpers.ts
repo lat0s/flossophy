@@ -16,12 +16,13 @@ export async function startApi(env: Record<string, string> = {}) {
   const cfg = loadConfig({ NODE_ENV: 'test', APP_ORIGIN: ORIGIN, DEMO_PERSONAS: 'true', ...env });
   const db = modelsFor(conn);
   await ensureIndexes(db);
-  await seed(db, await hashPassword(DEMO_PASSWORD));
-  const { app } = createApp(cfg, conn);
+  if (env.DEMO_SANDBOXES !== 'true') await seed(db, await hashPassword(DEMO_PASSWORD));
+  const { app, sandboxes } = createApp(cfg, conn);
   const server = app.callback();
   return {
     cfg,
     db,
+    sandboxes,
     agent: () => request.agent(server),
     http: () => request(server),
     async stop() {

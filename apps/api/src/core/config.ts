@@ -15,6 +15,10 @@ const Env = z.object({
   SESSION_SECRET: z.string().min(32).default('dev-only-session-secret-change-me-please'),
   /** One-click "try as patient/dentist" logins. */
   DEMO_PERSONAS: bool,
+  /** Every visitor gets a private, throwaway database; requires the gate cookie. */
+  DEMO_SANDBOXES: bool,
+  GATE_SECRET: z.string().min(32).default('dev-only-gate-secret-change-me-please-now'),
+  SANDBOX_IDLE_MINUTES: z.coerce.number().int().min(5).default(60),
   /** Read the client IP from CF-Connecting-IP / X-Forwarded-For. */
   TRUST_PROXY: bool,
   /** Optional real delivery, e.g. smtp://user:pass@smtp.example.com:587 */
@@ -27,7 +31,7 @@ export type Config = z.infer<typeof Env>;
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   const cfg = Env.parse(env);
   if (cfg.NODE_ENV === 'production') {
-    for (const key of ['SESSION_SECRET'] as const) {
+    for (const key of ['SESSION_SECRET', 'GATE_SECRET'] as const) {
       if (cfg[key].startsWith('dev-only')) throw new Error(`${key} must be set in production`);
     }
   }
