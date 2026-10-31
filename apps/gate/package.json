@@ -1,0 +1,24 @@
+{
+  "name": "@flossophy/gate",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch --env-file-if-exists=.env src/main.ts",
+    "build": "esbuild src/main.ts --bundle --platform=node --target=node24 --format=esm --banner:js=\"import{createRequire}from'node:module';const require=createRequire(import.meta.url);\" --outfile=dist/main.js",
+    "start": "node dist/main.js",
+    "typecheck": "tsc -p .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@flossophy/shared": "workspace:*",
+    "@hono/node-server": "^2.1.5",
+    "hono": "^4.13.16",
+    "zod": "^4.3.3"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "esbuild": "^0.28.2",
+    "vitest": "^5.0.5"
+  }
+}
