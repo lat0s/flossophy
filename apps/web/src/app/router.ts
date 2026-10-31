@@ -40,6 +40,11 @@ export const router = createRouter({
       meta: { api: true, role: 'patient', title: 'My visits' },
     },
     {
+      path: '/dentist',
+      component: () => import('@/features/dentist/DentistPage.vue'),
+      meta: { api: true, role: 'dentist', title: 'Schedule' },
+    },
+    {
       path: '/outbox',
       component: () => import('@/features/demo/OutboxPage.vue'),
       meta: { api: true, title: 'Outbox' },
