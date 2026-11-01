@@ -1,0 +1,50 @@
+# Full stack like the live demo: http://localhost:8090
+# Uses Cloudflare's Turnstile test keys, so the bot check always passes.
+name: flossophy
+
+x-secrets: &secrets
+  GATE_SECRET: ${GATE_SECRET:-local-compose-gate-secret-not-for-production}
+
+services:
+  mongo:
+    image: mongo:8
+    restart: unless-stopped
+    volumes: [mongo:/data/db]
+    healthcheck:
+      test: ['CMD', 'mongosh', '--quiet', '--eval', 'db.adminCommand("ping")']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build: { context: ., target: api }
+    restart: unless-stopped
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ['no-new-privileges:true']
+    environment:
+      <<: *secrets
+      MONGODB_URI: mongodb://mongo:27017
+      APP_ORIGIN: http://localhost:8090
+      SESSION_SECRET: ${SESSION_SECRET:-local-compose-session-secret-not-for-production}
+      DEMO_PERSONAS: 'true'
+      DEMO_SANDBOXES: 'true'
+    depends_on:
+      mongo: { condition: service_healthy }
+
+  gate:
+    build: { context: ., target: gate }
+    restart: unless-stopped
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ['no-new-privileges:true']
+    environment:
+      <<: *secrets
+      APP_ORIGIN: http://localhost:8090
+      PROXY_API_URL: http://api:3000
+    ports: ['127.0.0.1:8090:8090']
+    depends_on:
+      api: { condition: service_healthy }
+
+volumes:
+  mongo:

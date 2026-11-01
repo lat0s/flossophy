@@ -6,6 +6,7 @@ import { bodyLimit } from 'hono/body-limit';
 import { getCookie, setCookie } from 'hono/cookie';
 import type { GateConfig } from './config.ts';
 import type { Verify } from './turnstile.ts';
+import { alwaysAwake, type Wake } from './waker.ts';
 
 const APP_CSP = [
   "default-src 'self'",
@@ -40,7 +41,7 @@ function hourlyLimit(max: number) {
   };
 }
 
-export function createGate(cfg: GateConfig, verify: Verify) {
+export function createGate(cfg: GateConfig, verify: Verify, wake: Wake = alwaysAwake) {
   const app = new Hono();
   const allowOpen = hourlyLimit(cfg.OPENS_PER_IP_HOUR);
   // Sandboxes handed out and not yet expired: id → expiry (s).
@@ -118,8 +119,9 @@ export function createGate(cfg: GateConfig, verify: Verify) {
   if (cfg.PROXY_API_URL) {
     const target = cfg.PROXY_API_URL.replace(/\/$/, '');
     app.all('/api/*', async (c) => {
-      // Only visitors who passed the gate may reach the API.
+      // Only visitors who passed the gate may reach, and so wake, the API.
       if (!demo(c)) return fail(c, 401, 'demo_required', 'Open the live demo from the home page first');
+      if (!(await wake())) return fail(c, 503, 'waking', 'The clinic is still waking up');
       const url = new URL(c.req.url);
       const headers = new Headers(c.req.raw.headers);
       // The API trusts these, so they come from the gate only.

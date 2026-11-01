@@ -1,0 +1,89 @@
+# The live demo on Coolify (build pack dockercompose, base directory /deploy).
+# Only the gate has a domain. The API and Mongo sleep after 15 idle minutes; the gate asks Sablier to wake them.
+services:
+  gate:
+    build: { context: .., target: gate }
+    restart: unless-stopped
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ['no-new-privileges:true']
+    mem_limit: 128m
+    environment:
+      APP_ORIGIN: ${APP_ORIGIN:?}
+      GATE_SECRET: ${GATE_SECRET:?}
+      TURNSTILE_SITE_KEY: ${TURNSTILE_SITE_KEY:?}
+      TURNSTILE_SECRET: ${TURNSTILE_SECRET:?}
+      TURNSTILE_HOSTNAME: ${TURNSTILE_HOSTNAME:?}
+      PROXY_API_URL: http://api:3000
+      SABLIER_URL: http://sablier:10000
+      TRUST_PROXY: 'true'
+      SECURE_COOKIE: 'true'
+
+  api:
+    build: { context: .., target: api }
+    restart: unless-stopped
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ['no-new-privileges:true']
+    mem_limit: 384m
+    labels: [sablier.enable=true, sablier.group=flossophy]
+    environment:
+      MONGODB_URI: mongodb://flossophy:${MONGO_PASSWORD:?}@mongo:27017/?authSource=admin
+      APP_ORIGIN: ${APP_ORIGIN:?}
+      SESSION_SECRET: ${SESSION_SECRET:?}
+      GATE_SECRET: ${GATE_SECRET:?}
+      DEMO_PERSONAS: 'true'
+      DEMO_SANDBOXES: 'true'
+      TRUST_PROXY: 'true'
+    depends_on:
+      mongo: { condition: service_healthy }
+
+  mongo:
+    image: mongo:8
+    restart: unless-stopped
+    command: ['--wiredTigerCacheSizeGB', '0.25']
+    mem_limit: 512m
+    labels: [sablier.enable=true, sablier.group=flossophy]
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: flossophy
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:?}
+    volumes: [mongo:/data/db]
+    healthcheck:
+      test: ['CMD', 'mongosh', '--quiet', '--eval', 'db.adminCommand("ping")']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  sablier:
+    image: sablierapp/sablier:1.18.0
+    restart: unless-stopped
+    command: ['start', '--provider.name=docker', '--sessions.default-duration=15m']
+    environment:
+      DOCKER_HOST: tcp://socket-proxy:2375
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ['no-new-privileges:true']
+    mem_limit: 64m
+    depends_on: [socket-proxy]
+
+  # Sablier only ever lists, inspects, starts, stops and waits on containers.
+  socket-proxy:
+    image: wollomatic/socket-proxy:1.13.1
+    restart: unless-stopped
+    command:
+      - '-loglevel=warn'
+      - '-listenip=0.0.0.0'
+      - '-allowfrom=sablier'
+      - '-allowGET=^(/v[0-9.]+)?/(_ping|version|info|events|containers/json|containers/[a-zA-Z0-9_.-]+/json)$'
+      - '-allowHEAD=^(/v[0-9.]+)?/_ping$'
+      - '-allowPOST=^(/v[0-9.]+)?/containers/[a-zA-Z0-9_.-]+/(start|stop|wait)$'
+      - '-watchdoginterval=0'
+    user: '65534:${DOCKER_GID:-999}'
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ['no-new-privileges:true']
+    mem_limit: 32m
+    volumes: ['/var/run/docker.sock:/var/run/docker.sock:ro']
+
+volumes:
+  mongo:

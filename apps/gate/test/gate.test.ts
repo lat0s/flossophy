@@ -59,6 +59,28 @@ describe('gate', () => {
     expect((await open(app, '2.2.2.2')).status).toBe(503);
   });
 
+  it('wakes the API only for gate visitors', async () => {
+    let wakes = 0;
+    const cfg = loadConfig({
+      NODE_ENV: 'test',
+      WEB_DIST: dist,
+      TRUST_PROXY: 'true',
+      PROXY_API_URL: 'http://127.0.0.1:9',
+    });
+    const app = createGate(
+      cfg,
+      async () => true,
+      async () => (wakes++, false),
+    );
+    expect((await app.request('/api/health')).status).toBe(401);
+    expect((await app.request('/api/health', { headers: { cookie: 'fl_demo=abc.123.forged' } })).status).toBe(401);
+    expect(wakes).toBe(0);
+    const res = await open(app);
+    const r = await app.request('/api/health', { headers: { cookie: cookieOf(res) } });
+    expect(r.status).toBe(503);
+    expect(wakes).toBe(1);
+  });
+
   it('sets the forwarding headers itself', async () => {
     const { createServer } = await import('node:http');
     const seen: Record<string, unknown> = {};
