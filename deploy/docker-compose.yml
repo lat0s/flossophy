@@ -65,7 +65,10 @@ services:
     cap_drop: [ALL]
     security_opt: ['no-new-privileges:true']
     mem_limit: 64m
-    depends_on: [socket-proxy]
+    # Start last, so its startup sweep puts the API and Mongo to sleep.
+    depends_on:
+      socket-proxy: { condition: service_started }
+      api: { condition: service_healthy }
 
   # Sablier only ever lists, inspects, starts, stops and waits on containers.
   socket-proxy:
