@@ -39,7 +39,8 @@ services:
       mongo: { condition: service_healthy }
 
   mongo:
-    image: mongo:8
+    # MongoDB 8 refuses to start on Linux 6.19 to 7.0.13 (SERVER-121912), which the VPS runs.
+    image: mongo:7.0
     restart: unless-stopped
     command: ['--wiredTigerCacheSizeGB', '0.25']
     mem_limit: 512m
