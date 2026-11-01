@@ -120,6 +120,6 @@ async function welcome(db: Db, mailer: Mailer, name: string, to: string) {
     kind: 'welcome',
     to,
     subject: 'Welcome to Flossophy 🦷',
-    text: `Hi ${name},\n\nYour account is ready. Pick a clinic, tap a time, and you're booked.\n\nKeep smiling,\nFlossy from Flossophy`,
+    text: `Hi ${name.split(' ')[0]},\n\nYour account is ready. Pick a clinic, tap a time, and you're booked.\n\nKeep smiling,\nFlossy from Flossophy`,
   });
 }

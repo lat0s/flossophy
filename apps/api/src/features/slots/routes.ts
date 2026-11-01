@@ -21,6 +21,8 @@ import { type Mailer, sendEmail } from '../outbox/mailer.ts';
 const when = (d: Date) =>
   new Intl.DateTimeFormat('en-GB', { timeZone: CLINIC_TIME_ZONE, dateStyle: 'full', timeStyle: 'short' }).format(d);
 
+const firstName = (name: string) => name.split(' ')[0];
+
 /** Booked Slots of one Patient, joined with clinic and dentist, as Appointments. */
 export async function appointmentsOf(db: Db, filter: Record<string, unknown>, sort: 1 | -1, limit = 50) {
   const slots = await db.Slot.find({ booking: { $ne: null }, ...filter })
@@ -131,13 +133,13 @@ export function slotRoutes(mailer: Mailer) {
           kind: 'booked',
           to: patient!.email,
           subject: `Booked: ${a.clinic.name}, ${when(slot.startsAt)}`,
-          text: `Hi ${patient!.name},\n\nYou're booked with ${a.dentist.name} at ${a.clinic.name} (${a.clinic.address}) on ${when(slot.startsAt)}.\n\nNeed to change plans? You can cancel in the app until ${CANCEL_CUTOFF_HOURS} hours before.\n\nSee you soon,\nFlossy`,
+          text: `Hi ${firstName(patient!.name)},\n\nYou're booked with ${a.dentist.name} at ${a.clinic.name} (${a.clinic.address}) on ${when(slot.startsAt)}.\n\nNeed to change plans? You can cancel in the app until ${CANCEL_CUTOFF_HOURS} hours before.\n\nSee you soon,\nFlossy`,
         });
         await sendEmail(db, mailer, {
           kind: 'booked',
           to: dentist!.email,
           subject: `New booking: ${patient!.name}, ${when(slot.startsAt)}`,
-          text: `${patient!.name} booked ${when(slot.startsAt)} at ${a.clinic.name}.${a.reason ? `\nReason: ${a.reason}` : ''}`,
+          text: `Hi ${dentist!.name},\n\n${patient!.name} booked ${when(slot.startsAt)} at ${a.clinic.name}.${a.reason ? `\nReason: ${a.reason}` : ''}\n\nFlossy`,
         });
         return { appointment: a };
       },
@@ -195,13 +197,13 @@ export function slotRoutes(mailer: Mailer) {
           kind: 'cancelled',
           to: patient!.email,
           subject: `Cancelled: ${appointment.clinic.name}, ${at}`,
-          text: `Hi ${patient!.name},\n\nYour visit with ${appointment.dentist.name} on ${at} is cancelled. The time is open for someone else now.\n\nFlossy`,
+          text: `Hi ${firstName(patient!.name)},\n\nYour visit with ${appointment.dentist.name} on ${at} is cancelled. The time is open for someone else now.\n\nFlossy`,
         });
         await sendEmail(db, mailer, {
           kind: 'cancelled',
           to: dentist!.email,
           subject: `Cancelled: ${patient!.name}, ${at}`,
-          text: `${patient!.name} cancelled ${at}. The Slot is open again.`,
+          text: `Hi ${dentist!.name},\n\n${patient!.name} cancelled ${at}. The time is open again.\n\nFlossy`,
         });
         return undefined;
       },
