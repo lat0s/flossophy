@@ -18,6 +18,10 @@ const Env = z.object({
   OPENAPI_FILE: z.string().optional(),
   /** Forward /api here. Only visitors with a demo cookie get through. */
   PROXY_API_URL: z.string().url().optional(),
+  /** Sablier starts the API and Mongo on the first gated request and stops them when idle. */
+  SABLIER_URL: z.string().url().optional(),
+  SABLIER_GROUP: z.string().default('flossophy'),
+  SABLIER_SESSION: z.string().default('15m'),
   APP_ORIGIN: z.string().default('http://localhost:8090'),
   GATE_SECRET: z.string().min(32).default('dev-only-gate-secret-change-me-please-now'),
   TURNSTILE_SITE_KEY: z.string().default(TEST_SITE_KEY),
