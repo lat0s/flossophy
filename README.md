@@ -57,7 +57,7 @@ For development, you need Node 24+, pnpm and Docker:
 
 ```sh
 pnpm install
-docker run -d --name flossophy-mongo -p 127.0.0.1:27017:27017 mongo:8
+docker run -d --name flossophy-mongo -p 127.0.0.1:27017:27017 mongo:7.0
 cp apps/api/.env.example apps/api/.env && pnpm seed && pnpm dev
 # open http://localhost:5173 and sign in as Alex (patient) or Dr. Sara (dentist)
 ```
