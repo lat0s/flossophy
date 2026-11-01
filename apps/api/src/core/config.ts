@@ -19,6 +19,8 @@ const Env = z.object({
   DEMO_SANDBOXES: bool,
   GATE_SECRET: z.string().min(32).default('dev-only-gate-secret-change-me-please-now'),
   SANDBOX_IDLE_MINUTES: z.coerce.number().int().min(5).default(60),
+  /** Seed the main database on boot when it has no clinics yet. */
+  SEED_IF_EMPTY: bool,
   /** Read the client IP from CF-Connecting-IP / X-Forwarded-For. */
   TRUST_PROXY: bool,
   /** Optional real delivery, e.g. smtp://user:pass@smtp.example.com:587 */
