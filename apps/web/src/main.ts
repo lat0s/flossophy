@@ -7,7 +7,7 @@ import { queryClient } from './app/query';
 import { router } from './app/router';
 import { useSession } from './app/session';
 import { onApiFailure } from './shared/api/client';
-import { initTelemetry } from './shared/telemetry';
+import { captureError, initTelemetry } from './shared/telemetry';
 import './shared/theme';
 import './styles.css';
 
@@ -22,6 +22,12 @@ onApiFailure((e) => {
       router.push({ path: '/demo', query: { next: router.currentRoute.value.fullPath } });
   }
 });
+
+// Vue swallows component errors; keep logging them and report them.
+app.config.errorHandler = (err) => {
+  console.error(err);
+  captureError(err);
+};
 
 app.mount('#app');
 initTelemetry();
