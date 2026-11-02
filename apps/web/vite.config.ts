@@ -15,6 +15,6 @@ export default defineConfig({
       ...(process.env.GATE_URL !== 'none' && { '/gate': process.env.GATE_URL ?? 'http://localhost:8090' }),
     },
   },
-  build: { target: 'es2022', sourcemap: false, chunkSizeWarningLimit: 400 },
+  build: { target: 'es2022', sourcemap: process.env.SOURCEMAPS ? 'hidden' : false, chunkSizeWarningLimit: 400 },
   test: { environment: 'happy-dom', include: ['test/**/*.test.ts'] },
 });

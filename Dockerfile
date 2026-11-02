@@ -15,8 +15,11 @@ COPY . .
 ARG VITE_UMAMI_ID VITE_UMAMI_SRC VITE_GLITCHTIP_DSN
 RUN pnpm --filter @flossophy/api build \
  && pnpm --filter @flossophy/gate build \
- && pnpm --filter @flossophy/web build \
+ && SOURCEMAPS=1 pnpm --filter @flossophy/web build \
  && pnpm --filter @flossophy/api openapi /src/openapi.json
+# Hidden source maps for GlitchTip: debug IDs injected, copied to /sourcemaps (not served), removed from the site.
+RUN pnpm dlx @sentry/cli@3.8.2 sourcemaps inject apps/web/dist >/dev/null \
+ && mkdir -p /sourcemaps && cp -r apps/web/dist/. /sourcemaps/ && find apps/web/dist -name '*.map' -delete
 
 # argon2 is the only native module the API bundle leaves external.
 FROM node:24-alpine AS api-deps
@@ -39,6 +42,7 @@ ENV NODE_ENV=production PORT=8090 WEB_DIST=/app/web OPENAPI_FILE=/app/openapi.js
 WORKDIR /app
 COPY --from=build /src/apps/gate/dist/main.js ./main.js
 COPY --from=build /src/apps/web/dist ./web
+COPY --from=build /sourcemaps /sourcemaps
 COPY --from=build /src/openapi.json ./openapi.json
 RUN echo '{"type":"module"}' > package.json
 USER node
