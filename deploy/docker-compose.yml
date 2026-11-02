@@ -2,7 +2,13 @@
 # Only the gate has a domain. The API and Mongo sleep after 15 idle minutes; the gate asks Sablier to wake them.
 services:
   gate:
-    build: { context: .., target: gate }
+    build:
+      context: ..
+      target: gate
+      args:
+        VITE_UMAMI_ID: ${VITE_UMAMI_ID:-}
+        VITE_UMAMI_SRC: ${VITE_UMAMI_SRC:-}
+        VITE_GLITCHTIP_DSN: ${VITE_GLITCHTIP_DSN:-}
     restart: unless-stopped
     read_only: true
     cap_drop: [ALL]

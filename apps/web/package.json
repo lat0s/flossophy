@@ -16,6 +16,7 @@
     "@fontsource-variable/space-grotesk": "^5.3.0",
     "@fontsource/archivo-black": "^5.3.0",
     "@lucide/vue": "^1.66.0",
+    "@sentry/browser": "^11.10.0",
     "@tanstack/vue-query": "^5.105.1",
     "canvas-confetti": "^1.9.4",
     "leaflet": "^1.9.4",

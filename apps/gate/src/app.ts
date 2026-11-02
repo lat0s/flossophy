@@ -10,12 +10,12 @@ import { alwaysAwake, type Wake } from './waker.ts';
 
 const APP_CSP = [
   "default-src 'self'",
-  "script-src 'self' https://challenges.cloudflare.com",
+  "script-src 'self' https://challenges.cloudflare.com https://analytics.lat0s.com",
   'frame-src https://challenges.cloudflare.com',
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: https://tile.openstreetmap.org",
   "font-src 'self'",
-  "connect-src 'self'",
+  "connect-src 'self' https://analytics.lat0s.com https://errors.lat0s.com",
   // canvas-confetti draws in a blob worker.
   "worker-src 'self' blob:",
   "base-uri 'none'",

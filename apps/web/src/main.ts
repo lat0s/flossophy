@@ -7,6 +7,7 @@ import { queryClient } from './app/query';
 import { router } from './app/router';
 import { useSession } from './app/session';
 import { onApiFailure } from './shared/api/client';
+import { initTelemetry } from './shared/telemetry';
 import './shared/theme';
 import './styles.css';
 
@@ -23,3 +24,4 @@ onApiFailure((e) => {
 });
 
 app.mount('#app');
+initTelemetry();

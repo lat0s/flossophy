@@ -11,6 +11,8 @@ COPY apps/web/package.json apps/web/
 COPY packages/shared/package.json packages/shared/
 RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store pnpm install --frozen-lockfile
 COPY . .
+# Telemetry is off when these are unset (infra-vps sites/add-telemetry.sh sets them on Coolify).
+ARG VITE_UMAMI_ID VITE_UMAMI_SRC VITE_GLITCHTIP_DSN
 RUN pnpm --filter @flossophy/api build \
  && pnpm --filter @flossophy/gate build \
  && pnpm --filter @flossophy/web build \
