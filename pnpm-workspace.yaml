@@ -10,3 +10,6 @@ minimumReleaseAgeExclude:
   - '@tanstack/query-core@5.105.1'
   - '@tanstack/vue-query@5.105.1'
   - hono@4.13.16
+overrides:
+  js-beautify>glob: ^14.0.2
+  editorconfig>minimatch: ^11.0.1
